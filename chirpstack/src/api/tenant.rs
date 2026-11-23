@@ -271,11 +271,27 @@ impl TenantService for Tenant {
             )
             .await?;
 
+        let auth_id = request.extensions().get::<AuthID>().unwrap();
         let req = request.get_ref();
         let dev_addr_prefix =
             lrwn::DevAddrPrefix::from_str(&req.dev_addr_prefix).map_err(|e| e.status())?;
 
-        let tenants = tenant::list_by_dev_addr_prefix_overlap(dev_addr_prefix)
+        // Scope results to the caller's tenants for non-admin users; global admins
+        // and global admin API keys (already enforced by the validator) see all.
+        let user_id_filter: Option<Uuid> = match auth_id {
+            AuthID::User(id) => {
+                let u = user::get(id).await.map_err(|e| e.status())?;
+                if u.is_admin { None } else { Some(u.id.into()) }
+            }
+            AuthID::Key(_) => None,
+            _ => {
+                return Err(Status::internal(
+                    "request authenticated but no AuthID in extensions",
+                ));
+            }
+        };
+
+        let tenants = tenant::list_by_dev_addr_prefix_overlap(dev_addr_prefix, user_id_filter)
             .await
             .map_err(|e| e.status())?;
 

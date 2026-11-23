@@ -320,11 +320,21 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<Tena
 
 pub async fn list_by_dev_addr_prefix_overlap(
     dev_addr_prefix: lrwn::DevAddrPrefix,
+    user_id: Option<Uuid>,
 ) -> Result<Vec<Tenant>, Error> {
-    let tenants: Vec<Tenant> = tenant::table
-        .order_by(tenant::name)
-        .load(&mut get_async_db_conn().await?)
-        .await?;
+    let mut q = tenant::dsl::tenant
+        .left_join(tenant_user::table)
+        .select(tenant::all_columns)
+        .group_by(tenant::dsl::id)
+        .order_by(tenant::dsl::name)
+        .into_boxed();
+
+    // Non-admin callers only see tenants they are a member of (mirrors `list`).
+    if let Some(user_id) = &user_id {
+        q = q.filter(tenant_user::dsl::user_id.eq(fields::Uuid::from(user_id)));
+    }
+
+    let tenants: Vec<Tenant> = q.load(&mut get_async_db_conn().await?).await?;
 
     Ok(tenants
         .into_iter()
@@ -851,10 +861,13 @@ pub mod test {
 
         assert_eq!(
             0,
-            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00010000/16").unwrap())
-                .await
-                .unwrap()
-                .len()
+            list_by_dev_addr_prefix_overlap(
+                lrwn::DevAddrPrefix::from_str("00010000/16").unwrap(),
+                None
+            )
+            .await
+            .unwrap()
+            .len()
         );
 
         create(Tenant {
@@ -869,26 +882,35 @@ pub mod test {
 
         assert_eq!(
             1,
-            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00030000/16").unwrap())
-                .await
-                .unwrap()
-                .len()
+            list_by_dev_addr_prefix_overlap(
+                lrwn::DevAddrPrefix::from_str("00030000/16").unwrap(),
+                None
+            )
+            .await
+            .unwrap()
+            .len()
         );
 
         assert_eq!(
             0,
-            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00010000/16").unwrap())
-                .await
-                .unwrap()
-                .len()
+            list_by_dev_addr_prefix_overlap(
+                lrwn::DevAddrPrefix::from_str("00010000/16").unwrap(),
+                None
+            )
+            .await
+            .unwrap()
+            .len()
         );
 
         assert_eq!(
             1,
-            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00020000/15").unwrap())
-                .await
-                .unwrap()
-                .len()
+            list_by_dev_addr_prefix_overlap(
+                lrwn::DevAddrPrefix::from_str("00020000/15").unwrap(),
+                None
+            )
+            .await
+            .unwrap()
+            .len()
         );
     }
 
