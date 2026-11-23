@@ -194,14 +194,25 @@ impl Validator for ValidateUsersAccess {
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        // admin api key
-        let count = api_key::dsl::api_key
+        let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(fields::Uuid::from(id))
             .filter(api_key::dsl::is_admin.eq(true))
-            .first(&mut get_async_db_conn().await?)
-            .await?;
-        Ok(count)
+            .into_boxed();
+
+        match self.flag {
+            // read-only operation: any admin api key is allowed
+            Flag::List => {}
+            // write operation: require a non-read-only admin api key
+            Flag::Create => {
+                q = q.filter(api_key::dsl::is_read_only.eq(false));
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
