@@ -202,7 +202,7 @@ impl FuotaService for Fuota {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateFuotaDeploymentAccess::new(validator::Flag::Update, dp_id),
+                validator::ValidateFuotaDeploymentAccess::new(validator::Flag::Update, id),
             )
             .await?;
 
