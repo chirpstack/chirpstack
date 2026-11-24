@@ -56,6 +56,9 @@ jobs:
         name: Start dependency services
         run: docker compose up -d
       -
+        name: Install dev dependencies
+        run: nix-shell --command "make dev-dependencies"
+      -
         name: Build UI
         run: nix-shell --command "make build-ui"
       -
@@ -105,6 +108,9 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-dist-${{ hashFiles('**/Cargo.lock') }}
+      -
+        name: Install dev dependencies
+        run: nix-shell --command "make dev-dependencies"
       -
         name: Build UI
         run: nix-shell --command "make build-ui"

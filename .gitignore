@@ -1,7 +1,7 @@
 # hidden files
 .*
 !/chirpstack/.rpm
-!/.cargo
+!/.cargo/*.toml
 !/.env
 !/.docker-compose
 !.npmignore

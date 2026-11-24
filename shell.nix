@@ -20,11 +20,13 @@ pkgs.mkShell {
     pkgs.openssl
     pkgs.sqlite                 # sqlite binary + library for diesel
     pkgs.postgresql             # psql binary + library for diesel
-    pkgs.cargo-cross            # cross-compiling
     pkgs.cargo-deb              # deb packaging
     pkgs.diesel-cli             # diesel cli
     pkgs.jq                     # json query cli tool
   ];
+  shellHook = ''
+    export PATH=$PWD/.cargo/bin:$PATH
+  '';
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages.libclang.lib}/lib/clang/${pkgs.llvmPackages.libclang.version}/include";
   DOCKER_BUILDKIT = "1";
