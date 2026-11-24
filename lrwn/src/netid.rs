@@ -72,7 +72,7 @@ impl NetID {
         // back to bytes
         let out = temp.to_be_bytes();
         let mut blen: usize = (bits / 8) as usize;
-        if bits % 8 != 0 {
+        if !bits.is_multiple_of(8) {
             blen += 1;
         }
 

@@ -157,7 +157,7 @@ fn get_median(history: &[internal::UplinkAdrHistory]) -> i32 {
     rssi.sort_unstable();
     let m = rssi.len() / 2;
 
-    if rssi.len() % 2 != 0 {
+    if !rssi.len().is_multiple_of(2) {
         rssi[m]
     } else {
         (rssi[m - 1] + rssi[m]) / 2

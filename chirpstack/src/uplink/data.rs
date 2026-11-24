@@ -1277,7 +1277,7 @@ impl Data {
             let dev_rx1_delay = ds.rx1_delay as u8;
             let sys_rx1_delay = network_conf.rx1_delay;
 
-            let rx1_delay_increase = dev_rx1_delay.checked_sub(sys_rx1_delay).unwrap_or_default();
+            let rx1_delay_increase = dev_rx1_delay.saturating_sub(sys_rx1_delay);
             let rx1_delay_increase = std::time::Duration::from_secs(rx1_delay_increase.into());
 
             tokio::time::sleep(conf.network.get_downlink_data_delay + rx1_delay_increase).await;
@@ -1318,7 +1318,7 @@ impl Data {
             let dev_rx1_delay = ds.rx1_delay as u8;
             let sys_rx1_delay = network_conf.rx1_delay;
 
-            let rx1_delay_increase = dev_rx1_delay.checked_sub(sys_rx1_delay).unwrap_or_default();
+            let rx1_delay_increase = dev_rx1_delay.saturating_sub(sys_rx1_delay);
             let rx1_delay_increase = std::time::Duration::from_secs(rx1_delay_increase.into());
 
             tokio::time::sleep(conf.network.get_downlink_data_delay + rx1_delay_increase).await;

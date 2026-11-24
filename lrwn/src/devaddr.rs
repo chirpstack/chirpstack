@@ -262,7 +262,7 @@ impl DevAddr {
         let out = temp.to_be_bytes();
 
         let mut blen: usize = (nwkid_bits / 8) as usize;
-        if nwkid_bits % 8 != 0 {
+        if !nwkid_bits.is_multiple_of(8) {
             blen += 1;
         }
 

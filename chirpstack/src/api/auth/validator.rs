@@ -12,7 +12,7 @@ use crate::api::auth::AuthID;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::schema::{
     api_key, application, device, device_profile, fuota_deployment, gateway, multicast_group,
-    tenant, tenant_user, tenant_user_application, tenant_user_device_profile, user,
+    tenant_user, tenant_user_application, tenant_user_device_profile, user,
 };
 use crate::storage::{fields, get_async_db_conn};
 

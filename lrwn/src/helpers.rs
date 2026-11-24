@@ -12,7 +12,7 @@ pub fn encode_freq(freq: u32) -> Result<[u8; 3]> {
     if freq / 100 >= (1 << 24) {
         return Err(anyhow!("max freq value is 2^24 - 1"));
     }
-    if freq % 100 != 0 {
+    if !freq.is_multiple_of(100) {
         return Err(anyhow!("freq must be multiple of 100"));
     }
 
