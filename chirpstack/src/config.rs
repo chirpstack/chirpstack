@@ -863,6 +863,19 @@ impl Default for UI {
     }
 }
 
+/// Replace each `$NAME` by the value of the environment variable `NAME`, where
+/// `NAME` is the whole run of letters, digits and underscores after the `$`.
+/// A `$NAME` whose variable is not set is left as it is.
+fn substitute_env(content: &str, lookup: impl Fn(&str) -> Option<String>) -> String {
+    static NAME: LazyLock<regex::Regex> =
+        LazyLock::new(|| regex::Regex::new(r"\$([A-Za-z_][A-Za-z0-9_]*)").unwrap());
+
+    NAME.replace_all(content, |caps: &regex::Captures| {
+        lookup(&caps[1]).unwrap_or_else(|| caps[0].to_string())
+    })
+    .into_owned()
+}
+
 pub fn load(config_dir: &Path) -> Result<()> {
     let mut content: String = String::new();
 
@@ -881,9 +894,7 @@ pub fn load(config_dir: &Path) -> Result<()> {
     }
 
     // substitute environment variables in config file
-    for (k, v) in env::vars() {
-        content = content.replace(&format!("${}", k), &v);
-    }
+    let content = substitute_env(&content, |name| env::var(name).ok());
 
     let mut conf: Configuration = toml::from_str(&content)?;
 
@@ -971,7 +982,41 @@ pub fn get_required_snr_for_sf(sf: u8) -> Result<f32> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
+
+    #[test]
+    fn test_substitute_env() {
+        let vars = HashMap::from([
+            ("CHIRPSTACK_API", "wrong"),
+            ("CHIRPSTACK_API_SECRET", "s3cret"),
+            ("REGION", "eu868"),
+        ]);
+        let lookup = |name: &str| vars.get(name).map(|v| v.to_string());
+
+        // The whole name is looked up, not a variable that is a prefix of it.
+        assert_eq!(
+            "secret=\"s3cret\"",
+            substitute_env("secret=\"$CHIRPSTACK_API_SECRET\"", lookup)
+        );
+
+        // Names end at the first character that cannot be part of one.
+        assert_eq!(
+            "topic=\"eu868/gateway\"",
+            substitute_env("topic=\"$REGION/gateway\"", lookup)
+        );
+
+        // A variable that is not set leaves its reference as it is.
+        assert_eq!(
+            "secret=\"$NOT_SET\"",
+            substitute_env("secret=\"$NOT_SET\"", lookup)
+        );
+
+        // A value is not substituted into again.
+        let lookup = |name: &str| (name == "A").then(|| "$REGION".to_string());
+        assert_eq!("$REGION", substitute_env("$A", lookup));
+    }
 
     #[test]
     fn test_postgresql_connection_recycling_method_default() {
