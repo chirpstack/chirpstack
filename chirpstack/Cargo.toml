@@ -113,7 +113,7 @@
   openidconnect.workspace = true
 
   # MQTT
-  rumqttc-next.workspace = true
+  rumqttc.workspace = true
   hex.workspace = true
 
   # Codecs

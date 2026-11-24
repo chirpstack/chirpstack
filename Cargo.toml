@@ -174,9 +174,9 @@
     ] }
     # Needed until this issue has been solved: https://github.com/fede1024/rust-rdkafka/issues/829
     rdkafka-sys = { version = "~4.9.0", default-features = false }
-    rumqttc-next = { version = "0.34", default-features = false, features = [
+    rumqttc = { version = "0.25", default-features = false, features = [
       "url",
-      "use-rustls-ring",
+      "use-rustls-no-provider",
     ] }
 
 
