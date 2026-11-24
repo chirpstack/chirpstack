@@ -59,12 +59,12 @@ pub async fn load_key(key_file: &str) -> Result<PrivateKeyDer<'static>> {
 pub fn private_key_to_pkcs8(pem: &str) -> Result<String> {
     if pem.contains("RSA PRIVATE KEY") {
         use rsa::{
-            RsaPrivateKey,
+            PrivateKey,
             pkcs1::DecodeRsaPrivateKey,
             pkcs8::{EncodePrivateKey, LineEnding},
         };
 
-        let pkey = RsaPrivateKey::from_pkcs1_pem(pem).context("Read RSA PKCS#1")?;
+        let pkey = PrivateKey::from_pkcs1_pem(pem).context("Read RSA PKCS#1")?;
         let pkcs8_pem = pkey.to_pkcs8_pem(LineEnding::default())?;
         Ok(pkcs8_pem.as_str().to_owned())
     } else if pem.contains("EC PRIVATE KEY") {

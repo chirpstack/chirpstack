@@ -49,7 +49,7 @@ impl AuthClaim {
         Ok(encode(
             &Header::default(),
             self,
-            &EncodingKey::from_secret(secret),
+            &EncodingKey::from_secret(secret)?,
         )?)
     }
 
@@ -58,7 +58,7 @@ impl AuthClaim {
         val.set_audience(&["chirpstack"]);
         val.required_spec_claims = HashSet::new(); // make the 'exp' optional
 
-        let claim = decode::<AuthClaim>(token, &DecodingKey::from_secret(secret), &val)?;
+        let claim = decode::<AuthClaim>(token, &DecodingKey::from_secret(secret)?, &val)?;
         Ok(claim.claims)
     }
 }
