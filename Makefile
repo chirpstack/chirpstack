@@ -7,7 +7,8 @@ dist:
 
 # Install dev dependencies
 dev-dependencies:
-	cargo install cargo-generate-rpm --version 0.19.0 --locked
+	cargo install cargo-generate-rpm --version 0.19.0 --locked --root .cargo
+	cargo install cross --git https://github.com/cross-rs/cross --rev 452dc27a11d4f58d65309f8455c5cf7558f60513 --locked --root .cargo
 
 # Set the versions
 version:
@@ -62,5 +63,3 @@ test-all:
 	cd lrwn && make test
 	cd lrwn-filters && make test
 
-dev-dependencies:
-	cargo install cross --git https://github.com/cross-rs/cross --rev 452dc27a11d4f58d65309f8455c5cf7558f60513 --locked --root .cargo

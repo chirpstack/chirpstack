@@ -115,9 +115,6 @@ jobs:
         name: Build UI
         run: nix-shell --command "make build-ui"
       -
-        name: Install dev dependencies
-        run: nix-shell --command "make dev-dependencies"
-      -
         name: Build distributables
         run: nix-shell --command "make dist"
       -
