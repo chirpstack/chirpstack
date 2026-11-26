@@ -42,7 +42,7 @@
     "react-json-tree": "^0.20.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
-    "react-router": "^8.5.0"
+    "react-router": "^8.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
