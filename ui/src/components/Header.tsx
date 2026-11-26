@@ -1,9 +1,9 @@
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 import { Button, Dropdown, Input, AutoComplete } from "antd";
-import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
+import { UserOutlined, DownOutlined, QuestionOutlined, MenuOutlined } from "@ant-design/icons";
 
 import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 import type { SettingsResponse, GlobalSearchResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -12,6 +12,14 @@ import { GlobalSearchRequest } from "@chirpstack/chirpstack-api-grpc-web/api/int
 import InternalStore from "../stores/InternalStore";
 import SessionStore from "../stores/SessionStore";
 import type { MenuProps } from "antd/lib";
+
+function closeNav() {
+  document.documentElement.classList.remove("nav-open");
+}
+
+function toggleNav() {
+  document.documentElement.classList.toggle("nav-open");
+}
 
 const renderTitle = (title: string) => <span>{title}</span>;
 
@@ -24,9 +32,14 @@ const renderItem = (title: string, url: string) => ({
 
 function Header({ user }: { user: User }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [settings, setSettings] = useState<SettingsResponse | undefined>(undefined);
   const [searchResult, setSearchResult] = useState<GlobalSearchResponse | undefined>(undefined);
+
+  useEffect(() => {
+    closeNav();
+  }, [location.pathname]);
 
   useEffect(() => {
     InternalStore.settings((resp: SettingsResponse) => {
@@ -153,7 +166,9 @@ function Header({ user }: { user: User }) {
 
   return (
     <div>
+      <div className="nav-backdrop" onClick={closeNav} />
       <img className="logo" alt="ChirpStack" src="/logo.png" />
+      <Button className="nav-toggle" type="text" icon={<MenuOutlined />} onClick={toggleNav} aria-label="Open menu" />
       <div className="actions">
         <div className="search">
           <AutoComplete
@@ -175,7 +190,7 @@ function Header({ user }: { user: User }) {
         <div className="user">
           <Dropdown menu={menu} placement="bottomRight" trigger={["click"]}>
             <Button type="primary" icon={<UserOutlined />}>
-              {user.getEmail()} <DownOutlined />
+              <span className="user-label">{user.getEmail()}</span> <DownOutlined />
             </Button>
           </Dropdown>
         </div>
