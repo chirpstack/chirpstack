@@ -70,6 +70,7 @@
       "deadpool",
       "async-connection-wrapper",
     ] }
+    libsqlite3-sys = { version = "0.38", features = ["bundled"] }
     tokio-postgres = { version = "0.7" }
     tokio-postgres-rustls = { version = "0.14" }
     bigdecimal = "0.4"

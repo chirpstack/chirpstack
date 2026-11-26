@@ -4,16 +4,3 @@ RUN apt-get update && \
     apt-get --assume-yes install \
     protobuf-compiler \
     libprotobuf-dev
-
-ENV MUSL_PREFIX=arm-unknown-linux-musleabihf
-ENV SQLITE_VERSION=3490100
-
-RUN echo "Building SQLite" && \
-  cd /tmp && \
-  curl -fLO "https://sqlite.org/2025/sqlite-autoconf-$SQLITE_VERSION.tar.gz" && \
-  tar xvzf "sqlite-autoconf-$SQLITE_VERSION.tar.gz" && cd "sqlite-autoconf-$SQLITE_VERSION" && \
-  env CC=$MUSL_PREFIX-gcc ./configure --host=arm-linux --enable-static --prefix=/x-tools/$MUSL_PREFIX/$MUSL_PREFIX/sysroot && \
-  make && make install && \
-  rm -r /tmp/*
-
-ENV PKG_CONFIG_PATH=/x-tools/$MUSL_PREFIX/$MUSL_PREFIX/sysroot/lib/pkgconfig

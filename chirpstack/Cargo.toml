@@ -31,6 +31,7 @@
   ] }
   diesel_migrations.workspace = true
   diesel-async.workspace = true
+  libsqlite3-sys = { workspace = true, optional = true }
   tokio-postgres = { workspace = true, optional = true }
   tokio-postgres-rustls = { workspace = true, optional = true }
   bigdecimal.workspace = true
@@ -158,6 +159,7 @@
     "lrwn/sqlite",
     "diesel-async/sync-connection-wrapper",
     "diesel-async/sqlite",
+    "libsqlite3-sys",
   ]
   test-all-integrations = [
     "test-integration-amqp",
