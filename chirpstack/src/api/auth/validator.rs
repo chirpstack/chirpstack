@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use super::error::Error;
 use crate::api::auth::AuthID;
+use crate::api::oidc;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::schema::{
     api_key, application, device, device_profile, fuota_deployment, gateway, multicast_group,
@@ -39,6 +40,20 @@ impl RequestValidator {
         auth_validator: impl Validator + Sync,
     ) -> Result<(), Status> {
         let id = ext.get::<AuthID>().unwrap();
+
+        if let (AuthID::User(user_id), Some(session)) = (id, ext.get::<oidc::Session>()) {
+            match oidc::is_logged_out(user_id, session).await {
+                Ok(false) => {}
+                Ok(true) => {
+                    return Err(Status::unauthenticated("OIDC session has been logged out"));
+                }
+                Err(e) => {
+                    error!(error = %e.full(), "Validate OIDC session error");
+                    return Err(Status::internal(""));
+                }
+            }
+        }
+
         auth_validator.validate(id).await?;
 
         Ok(())
