@@ -8,7 +8,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, gateway, tenant,
+    device_keys, device_profile, gateway, join_accept_cache, tenant,
 };
 use crate::{
     config, gateway::backend as gateway_backend, integration, region, storage::fields, test, uplink,
@@ -558,6 +558,12 @@ async fn test_lorawan_10() {
                     }),
                     ..Default::default()
                 }),
+                assert::join_accept_cached(
+                    dev.dev_eui,
+                    EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+                    258,
+                    ja_pl.clone(),
+                ),
                 assert::enabled_class(dev.dev_eui, DeviceClass::A),
                 assert::device_queue_items(dev.dev_eui, vec![]),
                 assert::uplink_meta_log(stream::UplinkMeta {
@@ -1212,6 +1218,228 @@ async fn test_lorawan_11() {
     for tst in &tests {
         run_test(tst).await;
     }
+}
+
+#[tokio::test]
+async fn test_join_request_second_path_direct() {
+    let _guard = test::prepare().await;
+    integration::set_mock().await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
+
+    // --- fixtures: identical to test_lorawan_10 except dev_nonces starts empty ---
+    let t = tenant::create(tenant::Tenant {
+        name: "tenant".into(),
+        can_have_gateways: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let gw = gateway::create(gateway::Gateway {
+        name: "gateway".into(),
+        tenant_id: t.id,
+        gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let app = application::create(application::Application {
+        name: "app".into(),
+        tenant_id: t.id,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dp = device_profile::create(device_profile::DeviceProfile {
+        name: "dp".into(),
+        tenant_id: Some(t.id),
+        region: lrwn::region::CommonName::EU868,
+        mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
+        reg_params_revision: lrwn::region::Revision::A,
+        supports_otaa: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dev = device::create(device::Device {
+        name: "device".into(),
+        application_id: app.id,
+        device_profile_id: dp.id,
+        dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+        enabled_class: DeviceClass::B,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dk = device_keys::create(device_keys::DeviceKeys {
+        dev_eui: dev.dev_eui,
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
+        dev_nonces: fields::DevNonces::default(),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let rx_info = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
+        ..Default::default()
+    };
+
+    let mut tx_info = gw::UplinkTxInfo {
+        frequency: 868100000,
+        ..Default::default()
+    };
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
+
+    let mut jr_pl = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::JoinRequest,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
+            join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dev_eui: dev.dev_eui,
+            dev_nonce: 258,
+        }),
+        mic: None,
+    };
+    jr_pl.set_join_request_mic(&dk.nwk_key).unwrap();
+
+    let mut ja_pl = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::JoinAccept,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {
+            join_nonce: 0,
+            home_netid: lrwn::NetID::from_be_bytes([0, 0, 0]),
+            devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+            dl_settings: lrwn::DLSettings {
+                rx2_dr: 0,
+                rx1_dr_offset: 0,
+                opt_neg: false,
+            },
+            rx_delay: 1,
+            cflist: None,
+        }),
+        mic: None,
+    };
+    ja_pl
+        .set_join_accept_mic(
+            lrwn::JoinType::Join,
+            &EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            258,
+            &dk.nwk_key,
+        )
+        .unwrap();
+    ja_pl.encrypt_join_accept_payload(&dk.nwk_key).unwrap();
+    // --- end fixtures ---
+
+    let join_eui = EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]);
+
+    // A second request with a DIFFERENT nonce, for the negative case.
+    let mut jr_pl_other = jr_pl.clone();
+    if let lrwn::Payload::JoinRequest(pl) = &mut jr_pl_other.payload {
+        pl.dev_nonce = 259;
+    }
+    jr_pl_other.set_join_request_mic(&dk.nwk_key).unwrap();
+
+    // A request with the ORIGINAL nonce but a DIFFERENT JoinEUI, for the
+    // negative case that exercises the cache's join_eui guard.
+    let join_eui_other = EUI64::from_be_bytes([8, 7, 6, 5, 4, 3, 2, 1]);
+    let mut jr_pl_other_join_eui = jr_pl.clone();
+    if let lrwn::Payload::JoinRequest(pl) = &mut jr_pl_other_join_eui.payload {
+        pl.join_eui = join_eui_other;
+    }
+    jr_pl_other_join_eui
+        .set_join_request_mic(&dk.nwk_key)
+        .unwrap();
+
+    let send = |phy: lrwn::PhyPayload| {
+        let tx_info = tx_info.clone();
+        let rx_info = rx_info.clone();
+        async move {
+            integration::mock::reset().await;
+            gateway_backend::mock::reset().await;
+            uplink::handle_uplink(
+                CommonName::EU868,
+                "eu868",
+                Uuid::new_v4(),
+                gw::UplinkFrameSet {
+                    phy_payload: phy.to_vec().unwrap(),
+                    tx_info: Some(tx_info),
+                    rx_info: vec![rx_info],
+                },
+            )
+            .await
+            .unwrap();
+        }
+    };
+
+    // 1. First copy: normal accept.
+    send(jr_pl.clone()).await;
+    assert::downlink_phy_payloads(vec![ja_pl.clone(), ja_pl.clone()])().await;
+    assert::join_event_count(1)().await;
+    let ds_after_first = device::get(&dev.dev_eui)
+        .await
+        .unwrap()
+        .device_session
+        .unwrap();
+    let dk_after_first = device_keys::get(&dev.dev_eui).await.unwrap();
+
+    // 2. A different, already-used nonce is an unrelated replay: the cache entry
+    //    does not match on dev_nonce → normal error, entry untouched.
+    let mut dk_used = device_keys::get(&dev.dev_eui).await.unwrap();
+    dk_used.dev_nonces.insert(join_eui, 259);
+    device_keys::update(dk_used).await.unwrap();
+    send(jr_pl_other).await;
+    assert::no_downlink_frame()().await;
+    assert::integration_log(vec!["DevNonce has already been used".to_string()])().await;
+    assert!(
+        join_accept_cache::get(&dev.dev_eui)
+            .await
+            .unwrap()
+            .is_some()
+    );
+
+    // 3. The ORIGINAL nonce under a DIFFERENT JoinEUI: the cache entry does not
+    //    match on join_eui → normal error, entry untouched.
+    let mut dk_used = device_keys::get(&dev.dev_eui).await.unwrap();
+    dk_used.dev_nonces.insert(join_eui_other, 258);
+    device_keys::update(dk_used).await.unwrap();
+    send(jr_pl_other_join_eui).await;
+    assert::no_downlink_frame()().await;
+    assert::integration_log(vec!["DevNonce has already been used".to_string()])().await;
+    assert!(
+        join_accept_cache::get(&dev.dev_eui)
+            .await
+            .unwrap()
+            .is_some()
+    );
+
+    // 4. Second copy of the SAME request: identical accept re-sent, nothing else changes.
+    send(jr_pl.clone()).await;
+    assert::downlink_phy_payloads(vec![ja_pl.clone(), ja_pl.clone()])().await;
+    assert::integration_log(vec![])().await; // no "DevNonce has already been used"
+    assert::join_event_count(0)().await; // no second join event
+    let dev_after_second = device::get(&dev.dev_eui).await.unwrap();
+    assert_eq!(ds_after_first, dev_after_second.device_session.unwrap());
+    assert_eq!(
+        dk_after_first.join_nonce,
+        device_keys::get(&dev.dev_eui).await.unwrap().join_nonce
+    );
+
+    // 5. A THIRD copy: the re-send is bounded to one, the cache entry is gone and
+    //    this is an ordinary replay again.
+    assert_eq!(None, join_accept_cache::get(&dev.dev_eui).await.unwrap());
+    send(jr_pl.clone()).await;
+    assert::no_downlink_frame()().await;
+    assert::integration_log(vec!["DevNonce has already been used".to_string()])().await;
 }
 
 async fn run_test(t: &Test) {
